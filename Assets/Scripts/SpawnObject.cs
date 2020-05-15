@@ -1,49 +1,46 @@
-﻿using System.Collections;
+﻿using Assets.Scripts;
 using System.Collections.Generic;
-using System.Threading;
-using Assets.Scripts;
 using UnityEngine;
 
 public class SpawnObject : MonoBehaviour
 {
-    public GameObject spawnObject;
-    public List<GameObject> objectList = new List<GameObject>();
     [SerializeField] private float _distanceApart;
     [SerializeField] private int _amountToSpawn;
     [SerializeField] private Material _orangeMaterial;
     [SerializeField] private int _percentageOfOrange;
+    [SerializeField] private GameObject _spawnObject;
+
+    private readonly List<GameObject> _objectList = new List<GameObject>();
     private Vector3 _positionVector;
     private float _width;
     private float _length;
-    private float _height = 1;
-
+    private readonly float _height = 1;
 
     public void Start()
     {
-        var maxPossible = 0f;
-
         _width = GetComponent<Renderer>().bounds.size.x / 2;
         _length = GetComponent<Renderer>().bounds.size.z / 2;
 
-        maxPossible = (int) (_width * 2 / _distanceApart) * (_length * 2 / _distanceApart);
+        var maxPossible = (int)(_width * 2 / _distanceApart) * (_length * 2 / _distanceApart);
         maxPossible -= (maxPossible * .10f);
 
-        if (_amountToSpawn > maxPossible) _amountToSpawn = (int)maxPossible;
+        if (_amountToSpawn > maxPossible)
+            _amountToSpawn = (int)maxPossible;
 
         var count = 0;
-        while (objectList.Count < _amountToSpawn)
+        while (_objectList.Count < _amountToSpawn)
         {
-            _positionVector =  GetNewPosition();
+            _positionVector = GetNewPosition();
             if (CheckPosition(_positionVector))
             {
-                var prefab = Instantiate(spawnObject, _positionVector, Quaternion.identity);
-                objectList.Add(prefab);
+                var prefab = Instantiate(_spawnObject, _positionVector, Quaternion.identity);
+                _objectList.Add(prefab);
             }
             else
             {
                 count++;
-                if(count > _amountToSpawn) break;
-                
+                if (count > _amountToSpawn)
+                    break;
             }
         }
 
@@ -54,13 +51,13 @@ public class SpawnObject : MonoBehaviour
     {
         var percentage = _percentageOfOrange / 100f;
 
-        for (var i = 0; i < Mathf.FloorToInt(objectList.Count * percentage); i++)
+        for (var i = 0; i < Mathf.FloorToInt(_objectList.Count * percentage); i++)
         {
-            var j = Random.Range(0, objectList.Count);
-            if (!objectList[j].GetComponent<Prefab>().isOrange)
+            var j = Random.Range(0, _objectList.Count);
+            if (!_objectList[j].GetComponent<Prefab>().isOrange)
             {
-                objectList[j].GetComponent<MeshRenderer>().material = _orangeMaterial;
-                objectList[j].GetComponent<Prefab>().isOrange = true;
+                _objectList[j].GetComponent<MeshRenderer>().material = _orangeMaterial;
+                _objectList[j].GetComponent<Prefab>().isOrange = true;
             }
             else
             {
@@ -71,9 +68,10 @@ public class SpawnObject : MonoBehaviour
 
     private bool CheckPosition(Vector3 positionVector)
     {
-        foreach (var vectorPosition in objectList)
+        foreach (var newGameObject in _objectList)
         {
-            if (Vector3.Distance(vectorPosition.transform.position, positionVector) < _distanceApart) return false;
+            if (Vector3.Distance(newGameObject.transform.position, positionVector) < _distanceApart)
+                return false;
         }
         return true;
     }
@@ -84,6 +82,5 @@ public class SpawnObject : MonoBehaviour
         var z = Random.Range(-_length, _length);
         var y = _height;
         return new Vector3(x, y, z);
-
     }
 }
